@@ -62,7 +62,7 @@ def pipeline(df, names, classifiers, weight=None):
     X = StandardScaler().fit_transform(X)
     X_train, X_test, y_train, y_test = \
         train_test_split(X, y, test_size=.2, random_state=42)
-    
+
     # Augmented Data
     X, y = augmented_df.drop(['Name', 'Dead'], axis=1), augmented_df['Dead']
     GX_train, GX_test, Gy_train, Gy_test = \
