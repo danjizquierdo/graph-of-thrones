@@ -59,16 +59,19 @@ def pipeline(df, names, classifiers, weight=None):
                               pd.get_dummies(graph_df['Community'], prefix='community', drop_first=True)], axis=1)
     # Tabular Data
     X, y = df.drop(['Name', 'Dead'], axis=1), df['Dead']
-    X = StandardScaler().fit_transform(X)
+    scaler = StandardScaler()
     X_train, X_test, y_train, y_test = \
         train_test_split(X, y, test_size=.2, random_state=42)
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
 
     # Augmented Data
     X, y = augmented_df.drop(['Name', 'Dead'], axis=1), augmented_df['Dead']
     GX_train, GX_test, Gy_train, Gy_test = \
         train_test_split(X, y, test_size=.2, random_state=42)
-    GX_train = StandardScaler().fit_transform(GX_train)
-    GX_test = StandardScaler().fit_transform(GX_test)
+    g_scaler = StandardScaler()
+    GX_train = g_scaler.fit_transform(GX_train)
+    GX_test = g_scaler.transform(GX_test)
     for name, clf in zip(names, classifiers):
         clf.fit(X_train, y_train)
         print(f'Base F1 Score for {name}: {f1_score(y_test, clf.predict(X_test))}')
