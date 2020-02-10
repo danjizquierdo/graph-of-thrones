@@ -12,14 +12,33 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 
-# Helper function to augment table data
+
 def graph_of_thrones(G1, name):
+    """ Helper function to augment tabular data.
+    Parameters:
+            G1 (Graph Network): Collection of nodes.
+            name (String): Character's name to find in the network.
+    Returns:
+        [features]: List of to be appended to DataFrame, or if no match then a List of None values.
+    """
     if G1.nodes[name]:
         return [G1.nodes[name]['betweenness'], G1.nodes[name]['community'], G1.nodes[name]['rank'], G1.nodes[name]['degree']]
     return [None, None, None, None]
 
 def pipeline(df, names, classifiers, weight=None):
+    """ Distill visualization of weights and creation of models into a single pipeline.
+    Parameters:
+            df (Pandas DataFrame): Initial tabular data to be augmented.
+            names ([Strings]): List of model names to match with below classifiers.
+            classifiers([Sklearn Models]): List of SK Learn models to train.
+            weight (String, Default: None): Which edge weight to apply to the graph network.
+    Returns:
+        None: Function prints out the F1 score for each model both with and without the network augmented data.
+    """
+    # Read in tabular data
     book1_df = pd.read_csv('data/asoiaf-book1-edges.csv')
+
+    # Create and populate graph network
     G1 = nx.Graph()
     for row in book1_df.iterrows():
         if weight == 'inverse':
@@ -48,11 +67,12 @@ def pipeline(df, names, classifiers, weight=None):
                 wts.append(wt)
                 relationships.append((wt, n, nbr))
         # Examine weighted relationship, skip every other one (undirected relationship)
-        sorted(relationships, key=(lambda x: x[0]), reverse=False)[:10:2]
+        print(sorted(relationships, key=(lambda x: x[0]), reverse=False)[:10:2])
         # Plot distribution of weights
         plt.hist(wts);
         plt.show()
 
+    # Create augmented DataFrame
     graph_df = pd.concat([df, pd.DataFrame(df.apply(lambda x: graph_of_thrones(G1, x.Name), axis=1).values.tolist(),
                                            columns=['Betweenness', 'Community', 'Rank', 'Degree'])], axis=1)
     augmented_df = pd.concat([graph_df.drop('Community', axis=1),
@@ -72,6 +92,8 @@ def pipeline(df, names, classifiers, weight=None):
     g_scaler = StandardScaler()
     GX_train = g_scaler.fit_transform(GX_train)
     GX_test = g_scaler.transform(GX_test)
+
+    # Print out results for each model and DataFrame
     for name, clf in zip(names, classifiers):
         clf.fit(X_train, y_train)
         print(f'Base F1 Score for {name}: {f1_score(y_test, clf.predict(X_test))}')
