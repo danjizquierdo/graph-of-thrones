@@ -67,7 +67,7 @@ def pipeline(df, names, classifiers, weight=None):
                 wts.append(wt)
                 relationships.append((wt, n, nbr))
         # Examine weighted relationship, skip every other one (undirected relationship)
-        print(sorted(relationships, key=(lambda x: x[0]), reverse=False)[:10:2])
+        print(sorted(relationships, key=(lambda x: x[0]), reverse=True)[:10:2])
         # Plot distribution of weights
         plt.hist(wts);
         plt.show()
